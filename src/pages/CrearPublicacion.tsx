@@ -1,0 +1,575 @@
+import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import axios from "axios";
+import { crearPublicacion } from "../services/publicacionService";
+
+const API_URL = import.meta.env.VITE_API_URL;
+
+function CrearPublicacion() {
+
+    const { id } = useParams();
+    const navigate = useNavigate();
+
+    const [titulo, setTitulo] = useState("");
+    const [url, setUrl] = useState("");
+    const [comentario, setComentario] = useState("");
+
+    const [fotos, setFotos] = useState<File[]>([]);
+    const [guardando, setGuardando] = useState(false);
+
+    const [urlPublicacion, setUrlPublicacion] = useState("");
+
+    const seleccionarFotos = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+
+        if (!event.target.files) {
+            return;
+        }
+
+        const nuevasFotos = Array.from(
+            event.target.files
+        );
+
+        if (fotos.length + nuevasFotos.length > 3) {
+
+            alert(
+                "Solo puedes subir un máximo de 3 fotos."
+            );
+
+            return;
+        }
+
+        setFotos([
+            ...fotos,
+            ...nuevasFotos
+        ]);
+    };
+
+
+    const eliminarFoto = (index: number) => {
+
+        setFotos(
+            fotos.filter(
+                (_, i) => i !== index
+            )
+        );
+
+    };
+
+
+    // ==========================================
+    // GENERAR URL
+    // ==========================================
+
+    const generarUrl = (texto: string) => {
+
+        return texto
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9\s-]/g, "")
+            .trim()
+            .replace(/\s+/g, "-")
+            .replace(/-+/g, "-");
+
+    };
+
+
+    const guardar = async () => {
+
+        if (!titulo.trim()) {
+            alert("Ingresa el título.");
+            return;
+        }
+
+        if (!comentario.trim()) {
+            alert("Ingresa un comentario.");
+            return;
+        }
+
+        if (fotos.length === 0) {
+            alert("Debes subir al menos una foto.");
+            return;
+        }
+
+        if (!id) {
+            alert("No se encontró la categoría.");
+            return;
+        }
+
+        try {
+
+            setGuardando(true);
+
+            // ==========================================
+            // 1. GENERAR URL
+            // ==========================================
+
+            const urlGenerada = url.trim()
+                ? url.trim()
+                : generarUrl(titulo);
+
+
+            const datos = {
+
+                url: urlGenerada,
+
+                titulo: titulo.trim(),
+
+                id_categoria: Number(id),
+
+                comentarios: comentario.trim(),
+
+                estado: true
+
+            };
+
+
+            console.log(
+                "Enviando publicación:",
+                datos
+            );
+
+
+            // ==========================================
+            // 2. CREAR PUBLICACIÓN
+            // ==========================================
+
+            const respuesta =
+                await crearPublicacion(datos);
+
+
+            console.log(
+                "Publicación creada:",
+                respuesta
+            );
+
+
+            const idPublicacion =
+                respuesta.id;
+
+
+            // ==========================================
+            // 3. SUBIR FOTOS
+            // ==========================================
+
+            console.log(
+                "Subiendo fotos..."
+            );
+
+
+            for (const foto of fotos) {
+
+                const formData =
+                    new FormData();
+
+
+                formData.append(
+                    "id_publicacion",
+                    idPublicacion.toString()
+                );
+
+
+                formData.append(
+                    "foto",
+                    foto
+                );
+
+
+                await axios.post(
+                    `${API_URL}/fotos/`,
+                    formData
+                );
+
+            }
+
+
+            console.log(
+                "Fotos subidas correctamente."
+            );
+
+
+            // ==========================================
+            // 4. GENERAR URL FINAL
+            // ==========================================
+
+            const urlFinal =
+                `${window.location.origin}/${respuesta.url}`;
+
+
+            setUrlPublicacion(
+                urlFinal
+            );
+
+
+            alert(
+                "¡Publicación creada correctamente! ❤️"
+            );
+
+
+        } catch (error: any) {
+
+            console.error(
+                "Error creando publicación:",
+                error
+            );
+
+
+            if (
+                error.response &&
+                error.response.status === 400
+            ) {
+
+                alert(
+                    error.response.data?.detail ||
+                    "La URL ya está registrada."
+                );
+
+                return;
+            }
+
+
+            if (
+                error.response &&
+                error.response.data
+            ) {
+
+                alert(
+                    error.response.data.detail ||
+                    "Error al crear la publicación."
+                );
+
+                return;
+            }
+
+
+            alert(
+                "No se pudo conectar con el servidor."
+            );
+
+
+        } finally {
+
+            setGuardando(false);
+
+        }
+
+    };
+
+
+    // ==========================================
+    // PUBLICACIÓN CREADA
+    // ==========================================
+
+    if (urlPublicacion) {
+
+        return (
+
+            <main className="crear">
+
+                <section className="crear-contenido">
+
+                    <div className="crear-header">
+
+                        <div className="crear-icono">
+                            ❤️
+                        </div>
+
+                        <h1>
+                            ¡Publicación creada!
+                        </h1>
+
+                        <p>
+                            Tu publicación se guardó
+                            correctamente.
+                        </p>
+
+                    </div>
+
+
+                    <div className="formulario">
+
+                        <div className="campo">
+
+                            <label>
+                                Link de tu publicación
+                            </label>
+
+                            <div className="url-input">
+
+                                <input
+                                    type="text"
+                                    value={urlPublicacion}
+                                    readOnly
+                                />
+
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            className="btn-guardar"
+                            onClick={() =>
+                                window.open(
+                                    urlPublicacion,
+                                    "_blank"
+                                )
+                            }
+                        >
+                            ❤️ Ver publicación
+                        </button>
+
+
+                        <button
+                            className="volver"
+                            onClick={() =>
+                                navigate("/")
+                            }
+                        >
+                            ← Crear otra publicación
+                        </button>
+
+                    </div>
+
+                </section>
+
+            </main>
+
+        );
+    }
+
+
+    // ==========================================
+    // FORMULARIO
+    // ==========================================
+
+    return (
+
+        <main className="crear">
+
+            <section className="crear-contenido">
+
+                <button
+                    className="volver"
+                    onClick={() =>
+                        navigate("/")
+                    }
+                >
+                    ← Volver
+                </button>
+
+
+                <div className="crear-header">
+
+                    <div className="crear-icono">
+                        ❤️
+                    </div>
+
+                    <h1>
+                        Crear publicación
+                    </h1>
+
+                    <p>
+                        Crea algo especial para compartir.
+                    </p>
+
+                </div>
+
+
+                <div className="formulario">
+
+
+                    {/* TÍTULO */}
+
+                    <div className="campo">
+
+                        <label>
+                            Título
+                        </label>
+
+                        <input
+                            type="text"
+                            placeholder="Ej. Para el amor de mi vida"
+                            value={titulo}
+                            onChange={(e) =>
+                                setTitulo(
+                                    e.target.value
+                                )
+                            }
+                        />
+
+                    </div>
+
+
+                    {/* URL */}
+
+                    <div className="campo">
+
+                        <label>
+                            URL de tu publicación
+                        </label>
+
+                        <div className="url-input">
+
+                            <span>
+                                applove.com/p/
+                            </span>
+
+                            <input
+                                type="text"
+                                placeholder="mi-amor"
+                                value={url}
+                                onChange={(e) =>
+                                    setUrl(
+                                        e.target.value
+                                    )
+                                }
+                            />
+
+                        </div>
+
+                        <small>
+                            Si la dejas vacía,
+                            se generará automáticamente
+                            desde el título.
+                        </small>
+
+                    </div>
+
+
+                    {/* COMENTARIO */}
+
+                    <div className="campo">
+
+                        <label>
+                            Comentario
+                        </label>
+
+                        <textarea
+                            rows={6}
+                            placeholder="Escribe tu mensaje..."
+                            value={comentario}
+                            onChange={(e) =>
+                                setComentario(
+                                    e.target.value
+                                )
+                            }
+                        />
+
+                    </div>
+
+
+                    {/* FOTOS */}
+
+                    <div className="campo">
+
+                        <label>
+                            Fotos
+                        </label>
+
+                        <small>
+                            Puedes subir hasta 3 fotos.
+                        </small>
+
+
+                        <label
+                            className="subir-fotos"
+                        >
+
+                            <span>
+                                📷
+                            </span>
+
+                            <strong>
+                                Seleccionar fotos
+                            </strong>
+
+                            <small>
+                                JPG, PNG o WEBP
+                            </small>
+
+                            <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={
+                                    seleccionarFotos
+                                }
+                            />
+
+                        </label>
+
+
+                        {/* PREVISUALIZACIÓN */}
+
+                        {fotos.length > 0 && (
+
+                            <div className="fotos-preview">
+
+                                {fotos.map(
+                                    (foto, index) => (
+
+                                        <div
+                                            className="foto-preview"
+                                            key={index}
+                                        >
+
+                                            <img
+                                                src={
+                                                    URL.createObjectURL(
+                                                        foto
+                                                    )
+                                                }
+                                                alt={`Foto ${index + 1}`}
+                                            />
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    eliminarFoto(
+                                                        index
+                                                    )
+                                                }
+                                            >
+                                                ×
+                                            </button>
+
+                                        </div>
+
+                                    )
+                                )}
+
+                            </div>
+
+                        )}
+
+                    </div>
+
+
+                    {/* GUARDAR */}
+
+                    <button
+                        className="btn-guardar"
+                        onClick={guardar}
+                        disabled={guardando}
+                    >
+
+                        {guardando
+                            ? "Guardando publicación..."
+                            : "❤️ Crear publicación"
+                        }
+
+                    </button>
+
+
+                </div>
+
+            </section>
+
+        </main>
+    );
+}
+
+export default CrearPublicacion;

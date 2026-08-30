@@ -1,0 +1,993 @@
+/* =========================================
+   CONTENEDOR GENERAL
+========================================= */
+
+.publicacion {
+    min-height: 100vh;
+    background:
+        radial-gradient(
+            circle at top,
+            #fff8f5 0%,
+            #f8eeee 45%,
+            #f2e5e5 100%
+        );
+
+    padding: 30px 20px 60px;
+
+    color: #493638;
+
+    font-family:
+        "Segoe UI",
+        Arial,
+        sans-serif;
+}
+
+
+/* =========================================
+   CONTENIDO
+========================================= */
+
+.publicacion-contenido {
+    width: 100%;
+    max-width: 720px;
+
+    margin: 0 auto;
+
+    text-align: center;
+}
+
+
+/* =========================================
+   BOTÓN INICIO
+========================================= */
+
+.btn-inicio {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    padding: 10px 18px;
+
+    border: 1px solid #e4cfd0;
+
+    border-radius: 30px;
+
+    background: rgba(255,255,255,.75);
+
+    color: #805f63;
+
+    font-size: 14px;
+
+    cursor: pointer;
+
+    transition:
+        transform .2s ease,
+        background .2s ease,
+        box-shadow .2s ease;
+}
+
+.btn-inicio:hover {
+    transform: translateY(-2px);
+
+    background: white;
+
+    box-shadow:
+        0 5px 15px rgba(100,50,50,.10);
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.publicacion-header {
+
+    margin-top: 35px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 15px;
+
+}
+
+
+.publicacion-titulo {
+
+    margin: 0;
+
+    max-width: 600px;
+
+    color: #593f43;
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size: clamp(
+        30px,
+        6vw,
+        48px
+    );
+
+    font-weight: 500;
+
+    line-height: 1.15;
+}
+
+
+.decoracion {
+
+    color: #c9969c;
+
+    font-size: 24px;
+}
+
+
+/* =========================================
+   FECHA
+========================================= */
+
+.publicacion-fecha {
+
+    margin-top: 10px;
+
+    color: #a98589;
+
+    font-family:
+        Georgia,
+        serif;
+
+    font-size: 14px;
+
+    text-transform: capitalize;
+}
+
+
+/* =========================================
+   CARRUSEL
+========================================= */
+
+.carrusel-contenedor {
+
+    margin: 40px auto 35px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+}
+
+
+/* =========================================
+   POLAROID
+========================================= */
+
+.foto-polaroid {
+
+    position: relative;
+
+    width: min(
+        100%,
+        480px
+    );
+
+    padding: 14px 14px 55px;
+
+    background: #fff;
+
+    box-shadow:
+        0 12px 30px rgba(80,40,40,.18);
+
+    transform: rotate(-1deg);
+
+    transition:
+        transform .3s ease,
+        box-shadow .3s ease;
+}
+
+
+.foto-polaroid:hover {
+
+    transform:
+        rotate(0deg)
+        translateY(-3px);
+
+    box-shadow:
+        0 18px 35px rgba(80,40,40,.20);
+}
+
+
+/* =========================================
+   IMAGEN
+========================================= */
+
+.carrusel-imagen {
+
+    display: block;
+
+    width: 100%;
+
+    height: min(
+        60vh,
+        500px
+    );
+
+    object-fit: cover;
+
+    background: #eee;
+}
+
+
+/* =========================================
+   BOTONES CARRUSEL
+========================================= */
+
+.carrusel-btn {
+
+    position: absolute;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    width: 42px;
+
+    height: 42px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,.9);
+
+    color: #745357;
+
+    font-size: 34px;
+
+    line-height: 30px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 4px 12px rgba(0,0,0,.15);
+
+    transition:
+        transform .2s ease,
+        background .2s ease;
+}
+
+.carrusel-btn:hover {
+
+    background: white;
+
+    transform:
+        translateY(-50%)
+        scale(1.08);
+}
+
+.carrusel-btn.prev {
+    left: 25px;
+}
+
+.carrusel-btn.next {
+    right: 25px;
+}
+
+
+/* =========================================
+   INDICADORES
+========================================= */
+
+.carrusel-indicadores {
+
+    display: flex;
+
+    gap: 8px;
+
+    margin-top: 18px;
+}
+
+
+.indicador {
+
+    width: 9px;
+
+    height: 9px;
+
+    padding: 0;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: #d9bfc2;
+
+    cursor: pointer;
+
+    transition:
+        transform .2s ease,
+        background .2s ease;
+}
+
+
+.indicador.activo {
+
+    background: #a86d75;
+
+    transform: scale(1.35);
+}
+
+
+/* =========================================
+   SECCIÓN CARTA
+========================================= */
+
+.carta-seccion {
+
+    margin-top: 45px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+}
+
+
+.carta-ayuda {
+
+    margin-bottom: 20px;
+
+    color: #9a767a;
+
+    font-family:
+        Georgia,
+        serif;
+
+    font-size: 16px;
+
+    font-style: italic;
+}
+
+
+/* =========================================
+   SOBRE
+========================================= */
+
+.sobre {
+
+    position: relative;
+
+    width: min(
+        100%,
+        430px
+    );
+
+    height: 270px;
+
+    cursor: pointer;
+
+    perspective: 1000px;
+
+    transition:
+        transform .3s ease;
+}
+
+
+.sobre:hover {
+
+    transform:
+        translateY(-4px);
+}
+
+
+/* =========================================
+   CUERPO DEL SOBRE
+========================================= */
+
+.sobre-cuerpo {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 3;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f9e8e5,
+            #efd7d6
+        );
+
+    border-radius: 4px;
+
+    box-shadow:
+        0 12px 25px rgba(70,35,35,.18);
+}
+
+
+/* =========================================
+   SOLAPA
+========================================= */
+
+.solapa {
+
+    position: absolute;
+
+    top: 0;
+
+    left: 0;
+
+    width: 100%;
+
+    height: 145px;
+
+    z-index: 5;
+
+    background:
+        linear-gradient(
+            135deg,
+            #efd2d2,
+            #f6e1df
+        );
+
+    clip-path:
+        polygon(
+            0 0,
+            100% 0,
+            50% 100%
+        );
+
+    transform-origin: top center;
+
+    transition:
+        transform .8s cubic-bezier(
+            .4,
+            0,
+            .2,
+            1
+        );
+
+    filter:
+        drop-shadow(
+            0 2px 2px
+            rgba(80,40,40,.08)
+        );
+}
+
+
+/* =========================================
+   MENSAJE SOBRE
+========================================= */
+
+.sobre-mensaje {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 7;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 7px;
+
+    padding-top: 40px;
+
+    color: #8d696e;
+}
+
+
+.sobre-mensaje span {
+
+    font-size: 42px;
+
+    margin-bottom: 4px;
+}
+
+
+.sobre-mensaje strong {
+
+    font-family:
+        Georgia,
+        serif;
+
+    font-size: 17px;
+
+    font-weight: normal;
+}
+
+
+.sobre-mensaje small {
+
+    font-size: 12px;
+
+    opacity: .75;
+}
+
+
+/* =========================================
+   SELLO
+========================================= */
+
+.sello {
+
+    position: absolute;
+
+    z-index: 8;
+
+    left: 50%;
+
+    top: 118px;
+
+    transform:
+        translateX(-50%);
+
+    width: 50px;
+
+    height: 50px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            #b84c5b,
+            #8d2638
+        );
+
+    color: white;
+
+    font-size: 21px;
+
+    box-shadow:
+        0 4px 8px rgba(80,20,30,.25);
+}
+
+
+/* =========================================
+   CARTA INTERIOR
+========================================= */
+
+.carta {
+
+    position: absolute;
+
+    left: 7%;
+
+    width: 86%;
+
+    bottom: 15px;
+
+    height: 230px;
+
+    z-index: 2;
+
+    background: #fffdf8;
+
+    box-shadow:
+        0 4px 12px rgba(50,30,30,.12);
+
+    transition:
+        transform 1s cubic-bezier(
+            .4,
+            0,
+            .2,
+            1
+        );
+
+    overflow: hidden;
+}
+
+
+.carta-interior {
+
+    padding: 25px;
+
+    height: 100%;
+
+    overflow-y: auto;
+
+    box-sizing: border-box;
+}
+
+
+.carta-icono {
+
+    margin-bottom: 12px;
+
+    font-size: 24px;
+}
+
+
+.carta-texto,
+.carta-interior p {
+
+    margin: 0;
+
+    color: #59484a;
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size: 17px;
+
+    line-height: 1.8;
+
+    white-space: pre-wrap;
+}
+
+
+/* =========================================
+   ANIMACIÓN ABRIR SOBRE
+========================================= */
+
+.sobre.abierto {
+
+    transform:
+        translateY(40px);
+}
+
+
+.sobre.abierto .solapa {
+
+    transform:
+        rotateX(
+            180deg
+        );
+
+    z-index: 1;
+}
+
+
+.sobre.abierto .carta {
+
+    transform:
+        translateY(-180px);
+
+    z-index: 6;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.publicacion-footer {
+
+    margin-top: 60px;
+
+    color: #b18b90;
+
+    font-family:
+        Georgia,
+        serif;
+
+    font-size: 14px;
+}
+
+
+/* =========================================
+   CARGANDO
+========================================= */
+
+.publicacion-cargando {
+
+    min-height: 80vh;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    color: #8d6b70;
+}
+
+
+.publicacion-cargando .corazon {
+
+    font-size: 50px;
+
+    animation:
+        latido 1.2s infinite;
+}
+
+
+@keyframes latido {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+}
+
+
+/* =========================================
+   ERROR
+========================================= */
+
+.publicacion-error {
+
+    min-height: 80vh;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    text-align: center;
+}
+
+
+.publicacion-error .corazon {
+
+    font-size: 55px;
+
+    margin-bottom: 15px;
+}
+
+
+.publicacion-error h1 {
+
+    font-family:
+        Georgia,
+        serif;
+
+    color: #64484c;
+}
+
+
+.publicacion-error p {
+
+    color: #957478;
+
+    margin-bottom: 25px;
+}
+
+
+/* =========================================
+   RESPONSIVE - TABLET
+========================================= */
+
+@media (max-width: 600px) {
+
+    .publicacion {
+
+        padding:
+            20px 14px 45px;
+    }
+
+
+    .publicacion-header {
+
+        margin-top: 28px;
+
+        gap: 8px;
+    }
+
+
+    .decoracion {
+
+        font-size: 18px;
+    }
+
+
+    .publicacion-titulo {
+
+        font-size: 31px;
+    }
+
+
+    .publicacion-fecha {
+
+        font-size: 13px;
+    }
+
+
+    .carrusel-contenedor {
+
+        margin-top: 30px;
+    }
+
+
+    .foto-polaroid {
+
+        width: 92%;
+
+        padding:
+            10px 10px 40px;
+    }
+
+
+    .carrusel-imagen {
+
+        height: 58vh;
+
+        max-height: 460px;
+    }
+
+
+    .carrusel-btn {
+
+        width: 36px;
+
+        height: 36px;
+
+        font-size: 27px;
+    }
+
+
+    .carrusel-btn.prev {
+
+        left: 15px;
+    }
+
+
+    .carrusel-btn.next {
+
+        right: 15px;
+    }
+
+
+    .sobre {
+
+        width: 94%;
+
+        height: 245px;
+    }
+
+
+    .solapa {
+
+        height: 130px;
+    }
+
+
+    .sello {
+
+        top: 105px;
+
+        width: 45px;
+
+        height: 45px;
+    }
+
+
+    .carta {
+
+        height: 210px;
+    }
+
+
+    .carta-interior {
+
+        padding: 20px;
+    }
+
+
+    .carta-interior p {
+
+        font-size: 16px;
+
+        line-height: 1.65;
+    }
+
+
+    .sobre.abierto .carta {
+
+        transform:
+            translateY(-165px);
+    }
+
+}
+
+
+/* =========================================
+   RESPONSIVE - CELULAR PEQUEÑO
+========================================= */
+
+@media (max-width: 400px) {
+
+    .publicacion-titulo {
+
+        font-size: 27px;
+    }
+
+
+    .foto-polaroid {
+
+        width: 94%;
+    }
+
+
+    .carrusel-imagen {
+
+        height: 52vh;
+
+        max-height: 400px;
+    }
+
+
+    .sobre {
+
+        height: 220px;
+    }
+
+
+    .solapa {
+
+        height: 115px;
+    }
+
+
+    .sello {
+
+        top: 92px;
+
+        width: 40px;
+
+        height: 40px;
+
+        font-size: 18px;
+    }
+
+
+    .carta {
+
+        height: 190px;
+    }
+
+
+    .sobre.abierto .carta {
+
+        transform:
+            translateY(-145px);
+    }
+
+}
+
+
+.sobre-contenedor {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 40px auto 20px;
+}
