@@ -76,186 +76,201 @@ function CrearPublicacion() {
     };
 
 
-    const guardar = async () => {
+  
+const guardar = async () => {
 
-        if (!titulo.trim()) {
-            alert("Ingresa el título.");
-            return;
-        }
+    if (!titulo.trim()) {
+        alert("Ingresa el título.");
+        return;
+    }
 
-        if (!comentario.trim()) {
-            alert("Ingresa un comentario.");
-            return;
-        }
+    if (!comentario.trim()) {
+        alert("Ingresa un comentario.");
+        return;
+    }
 
-        if (fotos.length === 0) {
-            alert("Debes subir al menos una foto.");
-            return;
-        }
+    if (fotos.length === 0) {
+        alert("Debes subir al menos una foto.");
+        return;
+    }
 
-        if (!id) {
-            alert("No se encontró la categoría.");
-            return;
-        }
+    if (!id) {
+        alert("No se encontró la categoría.");
+        return;
+    }
 
-        try {
+    let idPublicacionCreada: number | null = null;
 
-            setGuardando(true);
+    try {
 
-            // ==========================================
-            // 1. GENERAR URL
-            // ==========================================
+        setGuardando(true);
 
-            const urlGenerada = url.trim()
-                ? url.trim()
-                : generarUrl(titulo);
+        // ==========================================
+        // 1. GENERAR URL
+        // ==========================================
 
+        const urlGenerada = url.trim()
+            ? url.trim()
+            : generarUrl(titulo);
 
-            const datos = {
+        const datos = {
+            url: urlGenerada,
+            titulo: titulo.trim(),
+            id_categoria: Number(id),
+            comentarios: comentario.trim(),
+            estado: true
+        };
 
-                url: urlGenerada,
-
-                titulo: titulo.trim(),
-
-                id_categoria: Number(id),
-
-                comentarios: comentario.trim(),
-
-                estado: true
-
-            };
+        console.log("Enviando publicación:", datos);
 
 
-            console.log(
-                "Enviando publicación:",
-                datos
+        // ==========================================
+        // 2. CREAR PUBLICACIÓN
+        // ==========================================
+
+        const respuesta = await crearPublicacion(datos);
+
+        console.log(
+            "Publicación creada:",
+            respuesta
+        );
+
+        idPublicacionCreada = respuesta.id;
+
+
+        // ==========================================
+        // 3. SUBIR FOTOS
+        // ==========================================
+
+        console.log("Subiendo fotos...");
+
+        for (const foto of fotos) {
+
+            const formData = new FormData();
+
+            formData.append(
+                "id_publicacion",
+                idPublicacionCreada.toString()
             );
 
-
-            // ==========================================
-            // 2. CREAR PUBLICACIÓN
-            // ==========================================
-
-            const respuesta =
-                await crearPublicacion(datos);
-
-
-            console.log(
-                "Publicación creada:",
-                respuesta
+            formData.append(
+                "foto",
+                foto
             );
 
+            await axios.post(
+                `${API_URL}/fotos/`,
+                formData
+            );
+        }
 
-            const idPublicacion =
-                respuesta.id;
+
+        console.log(
+            "Fotos subidas correctamente."
+        );
 
 
-            // ==========================================
-            // 3. SUBIR FOTOS
-            // ==========================================
+        // ==========================================
+        // 4. GENERAR URL FINAL
+        // ==========================================
+
+        const urlFinal =
+            `${window.location.origin}/${respuesta.url}`;
+
+        setUrlPublicacion(urlFinal);
+
+        alert(
+            "¡Publicación creada correctamente! ❤️"
+        );
+
+    } catch (error: any) {
+
+        console.error(
+            "Error creando publicación:",
+            error
+        );
+
+
+        // ==========================================
+        // SI LA PUBLICACIÓN YA FUE CREADA
+        // PERO FALLÓ UNA FOTO
+        // ==========================================
+
+        if (idPublicacionCreada !== null) {
 
             console.log(
-                "Subiendo fotos..."
+                "Eliminando publicación incompleta:",
+                idPublicacionCreada
             );
 
+            try {
 
-            for (const foto of fotos) {
-
-                const formData =
-                    new FormData();
-
-
-                formData.append(
-                    "id_publicacion",
-                    idPublicacion.toString()
+                await axios.delete(
+                    `${API_URL}/publicaciones/${idPublicacionCreada}`
                 );
 
-
-                formData.append(
-                    "foto",
-                    foto
+                console.log(
+                    "Publicación incompleta eliminada correctamente."
                 );
 
+            } catch (deleteError) {
 
-                await axios.post(
-                    `${API_URL}/fotos/`,
-                    formData
+                console.error(
+                    "No se pudo eliminar la publicación incompleta:",
+                    deleteError
                 );
-
             }
+        }
 
 
-            console.log(
-                "Fotos subidas correctamente."
-            );
+        // ==========================================
+        // ERROR DE URL DUPLICADA
+        // ==========================================
 
-
-            // ==========================================
-            // 4. GENERAR URL FINAL
-            // ==========================================
-
-            const urlFinal =
-                `${window.location.origin}/${respuesta.url}`;
-
-
-            setUrlPublicacion(
-                urlFinal
-            );
-
+        if (
+            error.response &&
+            error.response.status === 409
+        ) {
 
             alert(
-                "¡Publicación creada correctamente! ❤️"
+                error.response.data?.detail ||
+                "La URL ya está registrada. Elige otra."
             );
 
-
-        } catch (error: any) {
-
-            console.error(
-                "Error creando publicación:",
-                error
-            );
-
-
-            if (
-                error.response &&
-                error.response.status === 400
-            ) {
-
-                alert(
-                    error.response.data?.detail ||
-                    "La URL ya está registrada."
-                );
-
-                return;
-            }
-
-
-            if (
-                error.response &&
-                error.response.data
-            ) {
-
-                alert(
-                    error.response.data.detail ||
-                    "Error al crear la publicación."
-                );
-
-                return;
-            }
-
-
-            alert(
-                "No se pudo conectar con el servidor."
-            );
-
-
-        } finally {
-
-            setGuardando(false);
-
+            return;
         }
 
-    };
+
+        // ==========================================
+        // OTROS ERRORES
+        // ==========================================
+
+        if (
+            error.response &&
+            error.response.data
+        ) {
+
+            alert(
+                error.response.data.detail ||
+                "No se pudo crear la publicación."
+            );
+
+            return;
+        }
+
+
+        alert(
+            "No se pudo conectar con el servidor."
+        );
+
+    } finally {
+
+        setGuardando(false);
+
+    }
+};
+
+
 
 
     // ==========================================
