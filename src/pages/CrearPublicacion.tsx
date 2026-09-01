@@ -1,14 +1,139 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import { crearPublicacion } from "../services/publicacionService";
+import QRCode from "qrcode";
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+// Emoji por defecto si se entra directo a esta ruta sin pasar por Bienvenida
+const EMOJI_DEFAULT = "❤️";
+
+// ==========================================
+// Corta el texto en varias líneas si es muy largo para el ancho del canvas
+// ==========================================
+function wrapText(
+    ctx: CanvasRenderingContext2D,
+    texto: string,
+    maxWidth: number
+): string[] {
+
+    const palabras = texto.split(" ");
+    const lineas: string[] = [];
+    let lineaActual = "";
+
+    palabras.forEach((palabra) => {
+        const lineaPrueba = lineaActual
+            ? `${lineaActual} ${palabra}`
+            : palabra;
+
+        if (ctx.measureText(lineaPrueba).width > maxWidth && lineaActual) {
+            lineas.push(lineaActual);
+            lineaActual = palabra;
+        } else {
+            lineaActual = lineaPrueba;
+        }
+    });
+
+    if (lineaActual) lineas.push(lineaActual);
+
+    return lineas;
+}
+
+// ==========================================
+// Genera y descarga la imagen con emoji + título + QR
+// ==========================================
+async function descargarImagenPublicacion(
+    emoji: string,
+    titulo: string,
+    url: string
+) {
+
+    // 1. Genera el QR como imagen
+    const qrDataUrl = await QRCode.toDataURL(url, {
+        width: 400,
+        margin: 1,
+        color: {
+            dark: "#000000",
+            light: "#ffffff",
+        },
+    });
+
+    const qrImg = new Image();
+    qrImg.src = qrDataUrl;
+    await new Promise((resolve) => (qrImg.onload = resolve));
+
+    // 2. Prepara el canvas
+    const canvas = document.createElement("canvas");
+    const ancho = 600;
+    const alto = 780;
+    canvas.width = ancho;
+    canvas.height = alto;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Fondo
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, ancho, alto);
+
+    ctx.textAlign = "center";
+
+    // Emoji grande arriba
+    ctx.font = "100px sans-serif";
+    ctx.fillText(emoji, ancho / 2, 140);
+
+    // Título (con salto de línea automático si es largo)
+    ctx.font = "bold 40px sans-serif";
+    ctx.fillStyle = "#222222";
+
+    const lineas = wrapText(ctx, titulo, ancho - 80);
+    let y = 220;
+
+    lineas.forEach((linea) => {
+        ctx.fillText(linea, ancho / 2, y);
+        y += 50;
+    });
+
+    // QR debajo del título
+    const qrSize = 350;
+    const qrY = y + 30;
+
+    ctx.drawImage(
+        qrImg,
+        (ancho - qrSize) / 2,
+        qrY,
+        qrSize,
+        qrSize
+    );
+
+    // Texto pequeño bajo el QR
+    ctx.font = "20px sans-serif";
+    ctx.fillStyle = "#666666";
+    ctx.fillText(
+        "", //algun comentario debajo de la img
+        ancho / 2,
+        qrY + qrSize + 40
+    );
+
+    // 3. Descarga la imagen generada
+    const link = document.createElement("a");
+    link.download = "publicacion.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+}
+
 
 function CrearPublicacion() {
 
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Emoji recibido desde Bienvenida (navigate state), con fallback por defecto
+    const emoji: string =
+        (location.state as { emoji?: string } | null)?.emoji
+        ?? EMOJI_DEFAULT;
 
     const [titulo, setTitulo] = useState("");
     const [url, setUrl] = useState("");
@@ -22,48 +147,36 @@ function CrearPublicacion() {
     const seleccionarFotos = (
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
-
         if (!event.target.files) {
             return;
         }
-
         const nuevasFotos = Array.from(
             event.target.files
         );
-
         if (fotos.length + nuevasFotos.length > 3) {
-
             alert(
                 "Solo puedes subir un máximo de 3 fotos."
             );
-
             return;
         }
-
         setFotos([
             ...fotos,
             ...nuevasFotos
         ]);
     };
 
-
     const eliminarFoto = (index: number) => {
-
         setFotos(
             fotos.filter(
                 (_, i) => i !== index
             )
         );
-
     };
-
 
     // ==========================================
     // GENERAR URL
     // ==========================================
-
     const generarUrl = (texto: string) => {
-
         return texto
             .toLowerCase()
             .normalize("NFD")
@@ -71,207 +184,164 @@ function CrearPublicacion() {
             .replace(/[^a-z0-9\s-]/g, "")
             .trim()
             .replace(/\s+/g, "-")
-            .replace(/-+/g, "-");
-
+            .replace(/-+/g, "-")
+            .replace(/^-+|-+$/g, "");
     };
 
-
-  
-const guardar = async () => {
-
-    if (!titulo.trim()) {
-        alert("Ingresa el título.");
-        return;
-    }
-
-    if (!comentario.trim()) {
-        alert("Ingresa un comentario.");
-        return;
-    }
-
-    if (fotos.length === 0) {
-        alert("Debes subir al menos una foto.");
-        return;
-    }
-
-    if (!id) {
-        alert("No se encontró la categoría.");
-        return;
-    }
-
-    let idPublicacionCreada: number | null = null;
-
-    try {
-
-        setGuardando(true);
-
-        // ==========================================
-        // 1. GENERAR URL
-        // ==========================================
-
-        const urlGenerada = url.trim()
-            ? url.trim()
-            : generarUrl(titulo);
-
-        const datos = {
-            url: urlGenerada,
-            titulo: titulo.trim(),
-            id_categoria: Number(id),
-            comentarios: comentario.trim(),
-            estado: true
-        };
-
-        console.log("Enviando publicación:", datos);
-
-
-        // ==========================================
-        // 2. CREAR PUBLICACIÓN
-        // ==========================================
-
-        const respuesta = await crearPublicacion(datos);
-
-        console.log(
-            "Publicación creada:",
-            respuesta
-        );
-
-        idPublicacionCreada = respuesta.id;
-
-
-        // ==========================================
-        // 3. SUBIR FOTOS
-        // ==========================================
-
-        console.log("Subiendo fotos...");
-
-        for (const foto of fotos) {
-
-            const formData = new FormData();
-
-            formData.append(
-                "id_publicacion",
-                idPublicacionCreada.toString()
-            );
-
-            formData.append(
-                "foto",
-                foto
-            );
-
-            await axios.post(
-                `${API_URL}/fotos/`,
-                formData
-            );
+    const guardar = async () => {
+        if (!titulo.trim()) {
+            alert("Ingresa el título.");
+            return;
+        }
+        if (!comentario.trim()) {
+            alert("Ingresa un comentario.");
+            return;
+        }
+        if (fotos.length === 0) {
+            alert("Debes subir al menos una foto.");
+            return;
+        }
+        if (!id) {
+            alert("No se encontró la categoría.");
+            return;
         }
 
+        let idPublicacionCreada: number | null = null;
 
-        console.log(
-            "Fotos subidas correctamente."
-        );
+        try {
+            setGuardando(true);
 
+            // ==========================================
+            // 1. GENERAR URL
+            // ==========================================
+            const urlGenerada = url.trim()
+                ? generarUrl(url)
+                : generarUrl(titulo);
 
-        // ==========================================
-        // 4. GENERAR URL FINAL
-        // ==========================================
+            const datos = {
+                url: urlGenerada,
+                titulo: titulo.trim(),
+                id_categoria: Number(id),
+                comentarios: comentario.trim(),
+                estado: true
+            };
 
-        const urlFinal =
-            `${window.location.origin}/${respuesta.url}`;
+            console.log("Enviando publicación:", datos);
 
-        setUrlPublicacion(urlFinal);
-
-        alert(
-            "¡Publicación creada correctamente! ❤️"
-        );
-
-    } catch (error: any) {
-
-        console.error(
-            "Error creando publicación:",
-            error
-        );
-
-
-        // ==========================================
-        // SI LA PUBLICACIÓN YA FUE CREADA
-        // PERO FALLÓ UNA FOTO
-        // ==========================================
-
-        if (idPublicacionCreada !== null) {
-
+            // ==========================================
+            // 2. CREAR PUBLICACIÓN
+            // ==========================================
+            const respuesta = await crearPublicacion(datos);
             console.log(
-                "Eliminando publicación incompleta:",
-                idPublicacionCreada
+                "Publicación creada:",
+                respuesta
             );
 
-            try {
+            idPublicacionCreada = respuesta.id;
 
-                await axios.delete(
-                    `${API_URL}/publicaciones/${idPublicacionCreada}`
+            // ==========================================
+            // 3. SUBIR FOTOS
+            // ==========================================
+            console.log("Subiendo fotos...");
+
+            for (const foto of fotos) {
+                const formData = new FormData();
+                formData.append(
+                    "id_publicacion",
+                    idPublicacionCreada.toString()
                 );
-
-                console.log(
-                    "Publicación incompleta eliminada correctamente."
+                formData.append(
+                    "foto",
+                    foto
                 );
-
-            } catch (deleteError) {
-
-                console.error(
-                    "No se pudo eliminar la publicación incompleta:",
-                    deleteError
+                await axios.post(
+                    `${API_URL}/fotos/`,
+                    formData
                 );
             }
-        }
 
-
-        // ==========================================
-        // ERROR DE URL DUPLICADA
-        // ==========================================
-
-        if (
-            error.response &&
-            error.response.status === 409
-        ) {
-
-            alert(
-                error.response.data?.detail ||
-                "La URL ya está registrada. Elige otra."
+            console.log(
+                "Fotos subidas correctamente."
             );
 
-            return;
-        }
+            // ==========================================
+            // 4. GENERAR URL FINAL
+            // ==========================================
+            const urlFinal =
+                `${window.location.origin}/${respuesta.url}`;
 
-
-        // ==========================================
-        // OTROS ERRORES
-        // ==========================================
-
-        if (
-            error.response &&
-            error.response.data
-        ) {
+            setUrlPublicacion(urlFinal);
 
             alert(
-                error.response.data.detail ||
-                "No se pudo crear la publicación."
+                "¡Publicación creada correctamente! ❤️"
             );
 
-            return;
+        } catch (error: any) {
+            console.error(
+                "Error creando publicación:",
+                error
+            );
+
+            // ==========================================
+            // SI LA PUBLICACIÓN YA FUE CREADA
+            // PERO FALLÓ UNA FOTO
+            // ==========================================
+            if (idPublicacionCreada !== null) {
+                console.log(
+                    "Eliminando publicación incompleta:",
+                    idPublicacionCreada
+                );
+                try {
+                    await axios.delete(
+                        `${API_URL}/publicaciones/${idPublicacionCreada}`
+                    );
+                    console.log(
+                        "Publicación incompleta eliminada correctamente."
+                    );
+                } catch (deleteError) {
+                    console.error(
+                        "No se pudo eliminar la publicación incompleta:",
+                        deleteError
+                    );
+                }
+            }
+
+            // ==========================================
+            // ERROR DE URL DUPLICADA
+            // ==========================================
+            if (
+                error.response &&
+                error.response.status === 409
+            ) {
+                alert(
+                    error.response.data?.detail ||
+                    "La URL ya está registrada. Elige otra."
+                );
+                return;
+            }
+
+            // ==========================================
+            // OTROS ERRORES
+            // ==========================================
+            if (
+                error.response &&
+                error.response.data
+            ) {
+                alert(
+                    error.response.data.detail ||
+                    "No se pudo crear la publicación."
+                );
+                return;
+            }
+
+            alert(
+                "No se pudo conectar con el servidor."
+            );
+
+        } finally {
+            setGuardando(false);
         }
-
-
-        alert(
-            "No se pudo conectar con el servidor."
-        );
-
-    } finally {
-
-        setGuardando(false);
-
-    }
-};
-
-
-
+    };
 
     // ==========================================
     // PUBLICACIÓN CREADA
@@ -288,7 +358,7 @@ const guardar = async () => {
                     <div className="crear-header">
 
                         <div className="crear-icono">
-                            ❤️
+                            {emoji}
                         </div>
 
                         <h1>
@@ -328,12 +398,25 @@ const guardar = async () => {
                             className="btn-guardar"
                             onClick={() =>
                                 window.open(
-                                    urlPublicacion,
-                                    "_blank"
+                                    urlPublicacion
                                 )
                             }
                         >
-                            ❤️ Ver publicación
+                            {emoji} Ver publicación
+                        </button>
+
+
+                        <button
+                            className="btn-guardar"
+                            onClick={() =>
+                                descargarImagenPublicacion(
+                                    emoji,
+                                    'Tengo algo para Ti.',
+                                    urlPublicacion
+                                )
+                            }
+                        >
+                            📥 Descargar imagen
                         </button>
 
 
@@ -353,6 +436,7 @@ const guardar = async () => {
             </main>
 
         );
+
     }
 
 
@@ -379,7 +463,7 @@ const guardar = async () => {
                 <div className="crear-header">
 
                     <div className="crear-icono">
-                        ❤️
+                        {emoji}
                     </div>
 
                     <h1>
@@ -429,12 +513,12 @@ const guardar = async () => {
                         <div className="url-input">
 
                             <span>
-                                applove.com/p/
+                                Ej: www.app-love.com/Nick
                             </span>
 
                             <input
                                 type="text"
-                                placeholder="mi-amor"
+                                placeholder="Nick"
                                 value={url}
                                 onChange={(e) =>
                                     setUrl(
@@ -573,7 +657,7 @@ const guardar = async () => {
 
                         {guardando
                             ? "Guardando publicación..."
-                            : "❤️ Crear publicación"
+                            : `${emoji} Crear publicación`
                         }
 
                     </button>

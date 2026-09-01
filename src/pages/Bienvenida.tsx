@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 import api from "../api/axios";
 import type { Categoria } from "../types/categoria";
+import { getEmojiPorCategoria } from "../utils/emojis";
 
 function Bienvenida() {
 
@@ -47,12 +48,28 @@ function Bienvenida() {
 
     }, []);
 
+    // Precalcula el emoji de cada categoría solo cuando cambia la lista
+    const categoriasConEmoji = useMemo(
+        () =>
+            categorias.map(categoria => ({
+                categoria,
+                ...getEmojiPorCategoria(categoria.nombre),
+            })),
+        [categorias]
+    );
+
     const seleccionarCategoria = (
-        categoria: Categoria
+        categoria: Categoria,
+        emoji: string
     ) => {
 
         navigate(
-            `/crear/${categoria.id}`
+            `/crear/${categoria.id}`,
+            {
+                state: {
+                    emoji
+                }
+            }
         );
 
     };
@@ -90,21 +107,25 @@ function Bienvenida() {
 
                     <div className="categorias">
 
-                        {categorias.map(
-                            categoria => (
+                        {categoriasConEmoji.map(
+                            ({ categoria, emoji, descripcion }) => (
 
                                 <button
                                     key={categoria.id}
                                     className="categoria"
                                     onClick={() =>
                                         seleccionarCategoria(
-                                            categoria
+                                            categoria,
+                                            emoji
                                         )
                                     }
                                 >
 
-                                    <span>
-                                        ❤️
+                                    <span
+                                        title={descripcion}
+                                        aria-label={descripcion}
+                                    >
+                                        {emoji}
                                     </span>
 
                                     {categoria.nombre}
