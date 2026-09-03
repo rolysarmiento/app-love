@@ -2,7 +2,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import { crearPublicacion } from "../services/publicacionService";
-import QRCode from "qrcode";
+
 import { descargarImagenPublicacion } from "../utils/qr";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -10,36 +10,6 @@ const API_URL = import.meta.env.VITE_API_URL;
 // Emoji por defecto si se entra directo a esta ruta sin pasar por Bienvenida
 const EMOJI_DEFAULT = "❤️";
 
-// ==========================================
-// Corta el texto en varias líneas si es muy largo para el ancho del canvas
-// ==========================================
-function wrapText(
-    ctx: CanvasRenderingContext2D,
-    texto: string,
-    maxWidth: number
-): string[] {
-
-    const palabras = texto.split(" ");
-    const lineas: string[] = [];
-    let lineaActual = "";
-
-    palabras.forEach((palabra) => {
-        const lineaPrueba = lineaActual
-            ? `${lineaActual} ${palabra}`
-            : palabra;
-
-        if (ctx.measureText(lineaPrueba).width > maxWidth && lineaActual) {
-            lineas.push(lineaActual);
-            lineaActual = palabra;
-        } else {
-            lineaActual = lineaPrueba;
-        }
-    });
-
-    if (lineaActual) lineas.push(lineaActual);
-
-    return lineas;
-}
 
 
 function CrearPublicacion() {
