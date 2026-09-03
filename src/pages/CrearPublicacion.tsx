@@ -378,7 +378,7 @@ function CrearPublicacion() {
 
                         <input
                             type="text"
-                            placeholder="Título ..."
+                            placeholder="Título..."
                             value={titulo}
                             onChange={(e) =>
                                 setTitulo(
