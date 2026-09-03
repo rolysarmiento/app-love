@@ -7,6 +7,7 @@ import {
 import Bienvenida from "./pages/Bienvenida";
 import CrearPublicacion from "./pages/CrearPublicacion";
 import VerPublicacion from "./pages/VerPublicacion";
+import Apoyanos from "./pages/Apoyanos";
 
 function App() {
 
@@ -26,6 +27,13 @@ function App() {
                     element={<CrearPublicacion />}
                 />
 
+                {/* Página para apoyar a la comunidad */}
+                <Route
+                    path="/apoyanos"
+                    element={<Apoyanos />}
+                />
+
+                {/* Publicaciones */}
                 <Route
                     path="/:url"
                     element={<VerPublicacion />}

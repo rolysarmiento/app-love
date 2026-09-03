@@ -3,6 +3,7 @@ import { useState } from "react";
 import axios from "axios";
 import { crearPublicacion } from "../services/publicacionService";
 import QRCode from "qrcode";
+import { descargarImagenPublicacion } from "../utils/qr";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -38,89 +39,6 @@ function wrapText(
     if (lineaActual) lineas.push(lineaActual);
 
     return lineas;
-}
-
-// ==========================================
-// Genera y descarga la imagen con emoji + título + QR
-// ==========================================
-async function descargarImagenPublicacion(
-    emoji: string,
-    titulo: string,
-    url: string
-) {
-
-    // 1. Genera el QR como imagen
-    const qrDataUrl = await QRCode.toDataURL(url, {
-        width: 400,
-        margin: 1,
-        color: {
-            dark: "#000000",
-            light: "#ffffff",
-        },
-    });
-
-    const qrImg = new Image();
-    qrImg.src = qrDataUrl;
-    await new Promise((resolve) => (qrImg.onload = resolve));
-
-    // 2. Prepara el canvas
-    const canvas = document.createElement("canvas");
-    const ancho = 600;
-    const alto = 780;
-    canvas.width = ancho;
-    canvas.height = alto;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Fondo
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, ancho, alto);
-
-    ctx.textAlign = "center";
-
-    // Emoji grande arriba
-    ctx.font = "100px sans-serif";
-    ctx.fillText(emoji, ancho / 2, 140);
-
-    // Título (con salto de línea automático si es largo)
-    ctx.font = "bold 40px sans-serif";
-    ctx.fillStyle = "#222222";
-
-    const lineas = wrapText(ctx, titulo, ancho - 80);
-    let y = 220;
-
-    lineas.forEach((linea) => {
-        ctx.fillText(linea, ancho / 2, y);
-        y += 50;
-    });
-
-    // QR debajo del título
-    const qrSize = 350;
-    const qrY = y + 30;
-
-    ctx.drawImage(
-        qrImg,
-        (ancho - qrSize) / 2,
-        qrY,
-        qrSize,
-        qrSize
-    );
-
-    // Texto pequeño bajo el QR
-    ctx.font = "20px sans-serif";
-    ctx.fillStyle = "#666666";
-    ctx.fillText(
-        "", //algun comentario debajo de la img
-        ancho / 2,
-        qrY + qrSize + 40
-    );
-
-    // 3. Descarga la imagen generada
-    const link = document.createElement("a");
-    link.download = "publicacion.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
 }
 
 
@@ -416,7 +334,7 @@ function CrearPublicacion() {
                                 )
                             }
                         >
-                            📥 Descargar imagen
+                            📥 Descargar QR de Publicacion
                         </button>
 
 
@@ -573,32 +491,28 @@ function CrearPublicacion() {
                         </small>
 
 
-                        <label
-                            className="subir-fotos"
-                        >
+                        <label className="upload-box">
+    <input
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={seleccionarFotos}
+    />
 
-                            <span>
-                                📷
-                            </span>
+    <div className="upload-content">
+        <span className="upload-icon">📸</span>
 
-                            <strong>
-                                Seleccionar fotos
-                            </strong>
+        <strong>Selecciona tus fotos</strong>
 
-                            <small>
-                                JPG, PNG o WEBP
-                            </small>
+        <span>
+            Haz clic aquí para subir imágenes
+        </span>
 
-                            <input
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                onChange={
-                                    seleccionarFotos
-                                }
-                            />
-
-                        </label>
+        <small>
+            Puedes seleccionar varias fotos
+        </small>
+    </div>
+</label>
 
 
                         {/* PREVISUALIZACIÓN */}

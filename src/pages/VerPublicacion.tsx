@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./VerPublicacion.css";
+import { descargarImagenPublicacion } from "../utils/qr";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -66,7 +67,7 @@ function VerPublicacion() {
         return (
             <main className="publicacion">
                 <div className="publicacion-cargando">
-                    <div className="corazon">❤️</div>
+                    <div className="corazon"></div>
                     <p>Cargando publicación...</p>
                 </div>
             </main>
@@ -77,7 +78,7 @@ function VerPublicacion() {
         return (
             <main className="publicacion">
                 <div className="publicacion-error">
-                    <div className="corazon">💔</div>
+                    <div className="corazon"></div>
                     <h1>Publicación no encontrada</h1>
                     <p>{error}</p>
                 </div>
@@ -169,7 +170,7 @@ function VerPublicacion() {
                             <div className="sobre-cuerpo">
                                 {!sobreAbierto && (
                                     <span className="sobre-mensaje">
-                                        Abrir la carta ✉️
+                                        Abrir ✉️
                                     </span>
                                 )}
                             </div>
@@ -182,6 +183,42 @@ function VerPublicacion() {
                     </div>
                 )}
             </section>
+
+
+            <div className="descargar-qr">
+
+    <button
+        type="button"
+        className="btn-descargar-qr"
+        onClick={() => {
+
+            const urlPublicacion =
+                window.location.href;
+
+            descargarImagenPublicacion(
+                "😲",
+                publicacion.titulo,
+                urlPublicacion
+            );
+
+        }}
+    >
+        📥 Descargar QR
+    </button>
+
+</div>
+
+
+<div className="apoyar-link">
+    <button
+        type="button"
+        onClick={() => navigate("/apoyanos")}
+        className="btn-apoyar"
+    >
+        💖 Apoya a esta comunidad
+    </button>
+</div>
+
         </main>
     );
 }
