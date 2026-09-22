@@ -178,7 +178,7 @@ function VerPublicacion() {
                                 <p className="carta-texto">
                                     {publicacion.comentarios}
                                 </p>
-                            </div>
+                            </div> 
                         </div>
                     </div>
                 )}

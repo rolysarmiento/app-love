@@ -432,13 +432,15 @@
     width: 100%;
 
     display: flex;
-
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
 
     margin: 45px auto 30px;
 
     position: relative;
+
+    /* Permite que el contenido crezca */
+    overflow: visible;
 }
 
 
@@ -485,14 +487,15 @@
     position: absolute;
 
     left: 7%;
-
     bottom: 8px;
 
     width: 86%;
 
-    height: 235px;
+    /* YA NO height fija */
+    min-height: 235px;
+    max-height: 70vh;
 
-    padding: 42px 28px 30px;
+    padding: 55px 28px 30px;
 
     box-sizing: border-box;
 
@@ -503,22 +506,20 @@
             #fff8e8
         );
 
-    border:
-        1px solid #e7d8b8;
+    border: 1px solid #e7d8b8;
 
     border-radius: 4px;
 
-    /* OCULTA */
-    transform:
-        translateY(20px);
+    transform: translateY(20px);
 
     opacity: 0;
-
     visibility: hidden;
 
     z-index: 2;
 
-    overflow: hidden;
+    /* IMPORTANTE */
+    overflow-y: auto;
+    overflow-x: hidden;
 
     box-shadow:
         0 5px 15px rgba(50, 30, 20, 0.14);
@@ -607,14 +608,34 @@
    CONTENIDO CARTA
 ========================================= */
 
-.carta-interior {
-    height: 100%;
+.carta-texto,
+.carta-interior p {
+    margin: 15px 0 0;
 
-    padding: 10px;
+    color: #59484a;
 
-    overflow-y: auto;
+    font-family:
+        "Segoe Script",
+        "Bradley Hand",
+        "Brush Script MT",
+        cursive;
 
-    box-sizing: border-box;
+    font-size: 21px;
+
+    font-weight: 400;
+
+    line-height: 1.7;
+
+    letter-spacing: 0.3px;
+
+    text-align: center;
+
+    /* Permite que el texto completo ocupe varias líneas */
+    white-space: pre-wrap;
+
+    /* MUY IMPORTANTE */
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 
@@ -863,7 +884,7 @@
 
 .sobre.abierto .carta {
     transform:
-        translateY(-180px);
+        translateY(0);
 
     opacity: 1;
 
@@ -1212,15 +1233,35 @@
     /* SOBRE */
 
     .sobre-contenedor {
-        margin-top: 35px;
+        margin-top: 115px;
     }
 
 
     .sobre {
-        width: 94%;
+    position: relative;
 
-        height: 245px;
-    }
+    width: min(
+        100%,
+        480px
+    );
+
+    height: 285px;
+
+    cursor: pointer;
+
+    perspective: 1200px;
+
+    transition:
+        transform 0.4s ease;
+
+    filter:
+        drop-shadow(
+            0 15px 25px rgba(70, 35, 35, 0.18)
+        );
+
+    /* IMPORTANTE */
+    overflow: visible;
+}
 
 
     .solapa {
@@ -1241,27 +1282,73 @@
     /* CARTA */
 
     .carta {
-        height: 210px;
+    position: absolute;
 
-        padding:
-            38px
-            20px
-            25px;
-    }
+    left: 7%;
+    top: 100%;
+
+    width: 86%;
+
+    /* La carta empieza con un tamaño cómodo */
+    min-height: 235px;
+
+    /*
+     * Puede crecer hacia abajo.
+     * No la limitamos inicialmente.
+     */
+    height: auto;
+
+    padding: 55px 28px 35px;
+
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(
+            135deg,
+            #fffef9,
+            #fff8e8
+        );
+
+    border:
+        1px solid #e7d8b8;
+
+    border-radius: 4px;
+
+    /*
+     * Inicialmente escondida
+     */
+    transform:
+        translateY(-20px);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    z-index: 7;
+
+    /*
+     * MUY IMPORTANTE:
+     * NO overflow:hidden
+     */
+    overflow: visible;
+
+    box-shadow:
+        0 5px 15px rgba(50, 30, 20, 0.14);
+
+    transition:
+        transform 0.85s
+        cubic-bezier(
+            0.22,
+            1,
+            0.36,
+            1
+        ),
+        opacity 0.35s ease,
+        visibility 0s linear 0.85s;
+}
 
 
-    .carta-texto,
-    .carta-interior p {
-        font-size: 18px;
 
-        line-height: 1.7;
-    }
-
-
-    .sobre.abierto .carta {
-        transform:
-            translateY(-165px);
-    }
 
 
     /* QR */
@@ -1329,14 +1416,34 @@
 
 
     .carta {
-        height: 190px;
+    min-height: 235px;
+    max-height: 520px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    scrollbar-width: thin;
+}
+
+
+@media (max-width: 600px) {
+
+    .carta {
+        min-height: 210px;
+        max-height: 70vh;
 
         padding:
-            35px
-            16px
-            20px;
+            48px
+            20px
+            25px;
     }
 
+    .carta-texto,
+    .carta-interior p {
+        font-size: 18px;
+        line-height: 1.7;
+    }
+}
 
     .carta-texto,
     .carta-interior p {
@@ -1346,15 +1453,7 @@
     }
 
 
-    .sobre.abierto .carta {
-        transform:
-            translateY(-145px);
-    }
-
-
-    .sobre-mensaje {
-        font-size: 18px;
-    }
+    
 }
 
 
